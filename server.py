@@ -23,6 +23,7 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             metodo = line.split(' ')[0]
             nick = line.split('sip:')[1].split('@')[0]
             IP = line.split('@')[1].split(' ')[0]
+            ip_clt = str(self.client_address[0])
             print 'Recibo: ' + metodo + ' de ' + nick
             if metodo == 'INVITE':
                 #Mando las respuestas al INVITE
@@ -33,10 +34,10 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 print 'Respondemos al INVITE de ' + nick
             elif metodo == 'ACK':
                 #Al recibir el ACK ejecuto mp32rtp para mandar el fichero
-                aEjecutar = ('./mp32rtp -i 127.0.0.1 -p 23032 < ' + f_audio)
-                print "Ejecutando: ", aEjecutar
+                run = ('./mp32rtp -i ' + ip_clt + ' -p 23032 < ' + f_audio)
+                print "Ejecutando: ", run
                 os.system("chmod +x mp32rtp")
-                os.system(aEjecutar)
+                os.system(run)
             elif metodo == 'BYE':
                 #Mando la confirmacion de haber recibido el BYE
                 self.wfile.write("SIP/2.0 200 OK\r\n")
