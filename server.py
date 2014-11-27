@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: iso-8859-15 -*-
 """
-Clase (y programa principal) para un servidor de eco en UDP simple
+Clase (y programa principal) para un servidor SIP en UDP simple
 """
 
 import SocketServer
@@ -9,7 +9,7 @@ import sys
 import os
 
 
-class EchoHandler(SocketServer.DatagramRequestHandler):
+class SipHandler(SocketServer.DatagramRequestHandler):
     """
     SIP server class(INVITE,ACK y BYE)
     """
@@ -22,6 +22,7 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             print line
             line = line.split(" ")
             method = line[0]
+            ip_clt = str(self.client_address[0])
             if "SIP/2.0\r\n\r\n" not in line:
                 self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
             elif method == "INVITE":
@@ -29,9 +30,9 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 self.wfile.write("SIP/2.0 180 Ringing-\r\n\r\n")
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             elif method == "ACK":
-                aEjecutar = ('./mp32rtp -i ' + IP + ' -p 23032 < ' + fich_audio)
-                os.system(aEjecutar)
-                print aEjecutar
+                run = ('./mp32rtp -i ' + ip_clt + ' -p 23032 < ' + fich_audio)
+                os.system(run)
+                print run
             elif method == "BYE":
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
             else:
@@ -39,11 +40,10 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
 
 if __name__ == "__main__":
     # Creamos servidor de eco y escuchamos
-    IP = sys.argv[1]
     PORT = int(sys.argv[2])
     fich_audio = sys.argv[3]
     try:
-        serv = SocketServer.UDPServer((IP, PORT), EchoHandler)
+        serv = SocketServer.UDPServer(("", PORT), SipHandler)
     except (IndexError, ValueError):
         sys.exit("Usage: python servidor.py IP port audio_file")
     print "Listening...."
